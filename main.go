@@ -28,6 +28,7 @@ func main() {
 	e.GET("/username", GetUsernameController)
 	e.GET("/username/:id", GetDetailUsernameController)
 	e.POST("/username", LoginRequest)
+	e.DELETE("/username/:id", DeleteUser)
 	e.Start(":8000")
 }
 
@@ -55,6 +56,18 @@ func GetDetailUsernameController(c echo.Context) error {
 		Message: "Success",
 		Data:    user,
 	})
+}
+
+func DeleteUser(c echo.Context) error {
+	id := c.Param("id")
+	result := DB.Delete(&User{}, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to delete user"})
+	}
+	if result.RowsAffected == 0 {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
+	}
+	return c.JSON(http.StatusOK, map[string]string{"message": "User deleted"})
 }
 
 func LoginRequest(c echo.Context) error {
