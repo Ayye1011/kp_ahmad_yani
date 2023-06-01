@@ -19,7 +19,7 @@ type User struct {
 
 type Product struct {
 	Id       uint8  `gorm:primaryKey AutoIncrement json:"id"`
-	Category string `json :"category"`
+	Category string `gorm:"unique" json :"categories"`
 	Products string `json :"products"`
 }
 
@@ -40,7 +40,10 @@ func main() {
 	e.PUT("/username/:id", UpdateUser)
 
 	//controller product
-	e.GET("/product", GetCategories)
+	e.GET("/product", GetProduts)
+	e.GET("/product/:catagory", GetCategory)
+	e.PUT("/product/:catagory", UpdateProduct)
+
 	e.Start(":8000")
 }
 
@@ -116,7 +119,7 @@ func UpdateUser(c echo.Context) error {
 	})
 }
 
-func GetCategories(c echo.Context) error {
+func GetProduts(c echo.Context) error {
 	var product []Product
 	result := DB.Find(&product)
 	if result.Error != nil {
@@ -126,6 +129,49 @@ func GetCategories(c echo.Context) error {
 		Message: "Succcess",
 		Data:    product,
 	})
+}
+
+func GetCategory(c echo.Context) error {
+	catagoryName := c.Param("catagory")
+	var catagory []Product
+	result := DB.Where("catagory = ?", catagoryName).First(&catagory)
+	if result.Error != nil {
+		return echo.NewHTTPError(http.StatusNotFound, "Kategori tidak ditemukan")
+	}
+	return c.JSON(http.StatusOK, catagory)
+}
+
+func UpdateProduct(c echo.Context) error {
+	catagoryName := c.Param("catagory")
+	var product Product
+	result := DB.Where("catagory = ?", catagoryName).First(&product)
+	if result.Error != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "Product not found"})
+	}
+	updatedProduct := new(Product)
+	if err := c.Bind(updatedProduct); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
+	}
+	product.Category = updatedProduct.Category
+	product.Products = updatedProduct.Products
+
+	DB.Save(&product)
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "Product updated",
+		"data":    product,
+	})
+}
+
+func DeleteProduct(c echo.Context) error {
+	categories := c.Param("categories")
+	result := DB.Delete(&Product{}, categories)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to delete product"})
+	}
+	if result.RowsAffected == 0 {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "product not found"})
+	}
+	return c.JSON(http.StatusOK, map[string]string{"message": "product deleted"})
 }
 
 func connectDatabase() {
