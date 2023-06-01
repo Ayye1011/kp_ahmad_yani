@@ -27,6 +27,7 @@ func main() {
 	e := echo.New()
 	e.GET("/username", GetUsernameController)
 	e.POST("/username", LoginRequest)
+	e.DELETE("/username", DeleteUserController)
 	e.Start(":8000")
 }
 
@@ -50,6 +51,20 @@ func LoginRequest(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 	return c.JSON(http.StatusOK, userInput)
+}
+
+func DeleteUserController(c echo.Context) error {
+	userID := c.Param("id")
+	db := c.Get("db").(*gorm.DB)
+	result := db.Delete(&User{}, userID)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "Failed to delete user",
+		})
+	}
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "User deleted successfully",
+	})
 }
 
 func connectDatabase() {
