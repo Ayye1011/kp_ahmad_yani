@@ -17,28 +17,30 @@ type User struct {
 	Password string `json:"password"`
 }
 
-// type Catagory struct {
-// 	Id              uint8  `gorm:primaryKey AutoIncrement json:"id"`
-// 	Furniture       string `json:"furniture"`
-// 	HomeAccessories string `json:"homeaccessories"`
-// 	Electronic      string `json:"electronic"`
-// 	Handphone       string `json:"handphone"`
-// }
+type Product struct {
+	Id       uint8  `gorm:primaryKey AutoIncrement json:"id"`
+	Category string `json :"category"`
+	Products string `json :"products"`
+}
 
 type BaseResponese struct {
-	Message string
-	Data    interface{}
+	Message string      `json:"mesage"`
+	Data    interface{} `json:"data`
 }
 
 func main() {
 	connectDatabase()
 
 	e := echo.New()
+	// controller user
 	e.GET("/username", GetUsernameController)
 	e.GET("/username/:id", GetDetailUsernameController)
 	e.POST("/username", LoginRequest)
 	e.DELETE("/username/:id", DeleteUser)
 	e.PUT("/username/:id", UpdateUser)
+
+	//controller product
+	e.GET("/product", GetCategories)
 	e.Start(":8000")
 }
 
@@ -111,6 +113,18 @@ func UpdateUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "User updated",
 		"data":    user,
+	})
+}
+
+func GetCategories(c echo.Context) error {
+	var product []Product
+	result := DB.Find(&product)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+	return c.JSON(http.StatusOK, BaseResponese{
+		Message: "Succcess",
+		Data:    product,
 	})
 }
 
