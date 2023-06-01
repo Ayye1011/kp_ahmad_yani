@@ -17,6 +17,14 @@ type User struct {
 	Password string `json:"password"`
 }
 
+// type Catagory struct {
+// 	Id              uint8  `gorm:primaryKey AutoIncrement json:"id"`
+// 	Furniture       string `json:"furniture"`
+// 	HomeAccessories string `json:"homeaccessories"`
+// 	Electronic      string `json:"electronic"`
+// 	Handphone       string `json:"handphone"`
+// }
+
 type BaseResponese struct {
 	Message string
 	Data    interface{}
@@ -24,11 +32,13 @@ type BaseResponese struct {
 
 func main() {
 	connectDatabase()
+
 	e := echo.New()
 	e.GET("/username", GetUsernameController)
 	e.GET("/username/:id", GetDetailUsernameController)
 	e.POST("/username", LoginRequest)
 	e.DELETE("/username/:id", DeleteUser)
+	e.PUT("/username/:id", UpdateUser)
 	e.Start(":8000")
 }
 
@@ -80,6 +90,27 @@ func LoginRequest(c echo.Context) error {
 	return c.JSON(http.StatusOK, BaseResponese{
 		Message: "Success",
 		Data:    userInput,
+	})
+}
+
+func UpdateUser(c echo.Context) error {
+	id := c.Param("id")
+	var user User
+	result := DB.First(&user, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
+	}
+	updatedUser := new(User)
+	if err := c.Bind(updatedUser); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
+	}
+	user.Username = updatedUser.Username
+	user.Password = updatedUser.Password
+
+	DB.Save(&user)
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "User updated",
+		"data":    user,
 	})
 }
 
