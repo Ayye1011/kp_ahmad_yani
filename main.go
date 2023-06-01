@@ -26,8 +26,8 @@ func main() {
 	connectDatabase()
 	e := echo.New()
 	e.GET("/username", GetUsernameController)
+	e.GET("/username/:id", GetDetailUsernameController)
 	e.POST("/username", LoginRequest)
-	e.DELETE("/username", DeleteUserController)
 	e.Start(":8000")
 }
 
@@ -43,6 +43,20 @@ func GetUsernameController(c echo.Context) error {
 	})
 }
 
+func GetDetailUsernameController(c echo.Context) error {
+	id := c.Param("id")
+	var user User
+	result := DB.First(&user, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	return c.JSON(200, BaseResponese{
+		Message: "Success",
+		Data:    user,
+	})
+}
+
 func LoginRequest(c echo.Context) error {
 	var userInput User
 	c.Bind(&userInput)
@@ -50,20 +64,9 @@ func LoginRequest(c echo.Context) error {
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
-	return c.JSON(http.StatusOK, userInput)
-}
-
-func DeleteUserController(c echo.Context) error {
-	userID := c.Param("id")
-	db := c.Get("db").(*gorm.DB)
-	result := db.Delete(&User{}, userID)
-	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"message": "Failed to delete user",
-		})
-	}
-	return c.JSON(http.StatusOK, map[string]string{
-		"message": "User deleted successfully",
+	return c.JSON(http.StatusOK, BaseResponese{
+		Message: "Success",
+		Data:    userInput,
 	})
 }
 
