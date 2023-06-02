@@ -5,8 +5,13 @@ import (
 	"kpahmadyani/routes"
 )
 
-func main() {
+func Init() {
+	configs.LoadEnv()
 	configs.ConnectDatabase()
+}
+
+func main() {
+
 	e := routes.Init()
 	e.Start(":8000")
 }

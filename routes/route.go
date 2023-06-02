@@ -4,11 +4,13 @@ import (
 	"kpahmadyani/controllers"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func Init() *echo.Echo {
 	e := echo.New()
 	// controller user
+	e.Pre(middleware.RemoveTrailingSlash())
 	e.GET("/user", controllers.GetUserController)
 	e.GET("/user/:id", controllers.GetDetailUserController)
 	e.POST("/user", controllers.LoginRequest)
