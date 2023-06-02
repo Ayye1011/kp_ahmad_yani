@@ -17,6 +17,7 @@ type User struct {
 	Password string `json:"password"`
 }
 
+
 type Category struct {
 	ID   uint   `gorm:"primaryKey;autoIncrement" json:"id"`
 	Name string `gorm:"unique" json:"category"`
@@ -27,6 +28,7 @@ type Product struct {
 	Name       string
 	CategoryID uint
 	Category   Category `gorm:"foreignKey:CategoryID"`
+
 }
 
 type BaseResponese struct {
@@ -39,6 +41,7 @@ func main() {
 
 	e := echo.New()
 	// controller user
+
 	e.GET("/user", GetUserController)
 	e.GET("/user/:id", GetDetailUserController)
 	e.POST("/user", LoginRequest)
@@ -50,6 +53,7 @@ func main() {
 	e.GET("/products/:category", GetCategoryWithProductsController)
 	e.POST("/products", AddProductController)
 	e.DELETE("products/:id", DeleteProductController)
+
 
 	e.Start(":8000")
 }
@@ -126,13 +130,16 @@ func UpdateUser(c echo.Context) error {
 	})
 }
 
+
 func GetProductController(c echo.Context) error {
 	var products []Product
 	result := DB.Preload("Category").Find(&products)
+
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 	return c.JSON(http.StatusOK, BaseResponese{
+
 		Message: "succes",
 		Data:    products,
 	})
@@ -169,9 +176,11 @@ func AddProductController(c echo.Context) error {
 	DB.Create(&product)
 	return c.JSON(http.StatusOK, BaseResponese{
 		Message: "Berhasil Menambahkan Product",
+
 		Data:    product,
 	})
 }
+
 
 func DeleteProductController(c echo.Context) error {
 	productID := c.Param("id")
@@ -184,6 +193,7 @@ func DeleteProductController(c echo.Context) error {
 		"message": "Product deleted",
 	})
 }
+
 
 func connectDatabase() {
 	dsn := "root:Sitialbir@tcp(127.0.0.1:1011)/unjuk_keterampilan_ok?charset=utf8mb4&parseTime=True&loc=Local"
