@@ -13,36 +13,48 @@ var DB *gorm.DB
 
 type User struct {
 	Id       uint8  `gorm:primaryKey AutoIncrement json:"id"`
-	Username string `json:"username"`
+	User     string `json:"user"`
 	Password string `json:"password"`
 }
 
-// type Catagory struct {
-// 	Id              uint8  `gorm:primaryKey AutoIncrement json:"id"`
-// 	Furniture       string `json:"furniture"`
-// 	HomeAccessories string `json:"homeaccessories"`
-// 	Electronic      string `json:"electronic"`
-// 	Handphone       string `json:"handphone"`
-// }
+type Category struct {
+	ID   uint   `gorm:"primaryKey;autoIncrement" json:"id"`
+	Name string `gorm:"unique" json:"category"`
+}
+
+type Product struct {
+	ID         uint `gorm:"primaryKey;autoIncrement"`
+	Name       string
+	CategoryID uint
+	Category   Category `gorm:"foreignKey:CategoryID"`
+}
 
 type BaseResponese struct {
-	Message string
-	Data    interface{}
+	Message string      `json:"mesage"`
+	Data    interface{} `json:"data`
 }
 
 func main() {
 	connectDatabase()
 
 	e := echo.New()
-	e.GET("/username", GetUsernameController)
-	e.GET("/username/:id", GetDetailUsernameController)
-	e.POST("/username", LoginRequest)
-	e.DELETE("/username/:id", DeleteUser)
-	e.PUT("/username/:id", UpdateUser)
+	// controller user
+	e.GET("/user", GetUserController)
+	e.GET("/user/:id", GetDetailUserController)
+	e.POST("/user", LoginRequest)
+	e.DELETE("/user/:id", DeleteUser)
+	e.PUT("/user/:id", UpdateUser)
+
+	//controller product
+	e.GET("/products", GetProductController)
+	e.GET("/products/:category", GetCategoryWithProductsController)
+	e.POST("/products", AddProductController)
+	e.DELETE("products/:id", DeleteProductController)
+
 	e.Start(":8000")
 }
 
-func GetUsernameController(c echo.Context) error {
+func GetUserController(c echo.Context) error {
 	var users []User
 	result := DB.Find(&users)
 	if result.Error != nil {
@@ -54,7 +66,7 @@ func GetUsernameController(c echo.Context) error {
 	})
 }
 
-func GetDetailUsernameController(c echo.Context) error {
+func GetDetailUserController(c echo.Context) error {
 	id := c.Param("id")
 	var user User
 	result := DB.First(&user, id)
@@ -104,7 +116,7 @@ func UpdateUser(c echo.Context) error {
 	if err := c.Bind(updatedUser); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
 	}
-	user.Username = updatedUser.Username
+	user.User = updatedUser.User
 	user.Password = updatedUser.Password
 
 	DB.Save(&user)
@@ -114,8 +126,67 @@ func UpdateUser(c echo.Context) error {
 	})
 }
 
+func GetProductController(c echo.Context) error {
+	var products []Product
+	result := DB.Preload("Category").Find(&products)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+	return c.JSON(http.StatusOK, BaseResponese{
+		Message: "succes",
+		Data:    products,
+	})
+}
+
+func GetCategoryWithProductsController(c echo.Context) error {
+	categoryName := c.Param("category")
+	var category Category
+	DB.Where("name = ?", categoryName).First(&category)
+	if category.ID == 0 {
+		return echo.NewHTTPError(http.StatusNotFound, "Category not found")
+	}
+
+	var products []Product
+	DB.Preload("Category").Where("category_id = ?", category.ID).Find(&products)
+	return c.JSON(http.StatusOK, BaseResponese{
+		Message: "Success",
+		Data:    products,
+	})
+
+}
+
+func AddProductController(c echo.Context) error {
+	product := new(Product)
+	if err := c.Bind(product); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request")
+	}
+	var category Category
+	DB.Where("name = ?", product.Category.Name).First(&category)
+	if category.ID == 0 {
+		return echo.NewHTTPError(http.StatusNotFound, "Category not found")
+	}
+	product.CategoryID = category.ID
+	DB.Create(&product)
+	return c.JSON(http.StatusOK, BaseResponese{
+		Message: "Berhasil Menambahkan Product",
+		Data:    product,
+	})
+}
+
+func DeleteProductController(c echo.Context) error {
+	productID := c.Param("id")
+	result := DB.Delete(&Product{}, productID)
+	if result.RowsAffected == 0 {
+		return echo.NewHTTPError(http.StatusNotFound, "Product not found")
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "Product deleted",
+	})
+}
+
 func connectDatabase() {
-	dsn := "root:Sitialbir@tcp(127.0.0.1:1011)/unjuk_keterampilan?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:Sitialbir@tcp(127.0.0.1:1011)/unjuk_keterampilan_ok?charset=utf8mb4&parseTime=True&loc=Local"
 	var err error
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -126,4 +197,6 @@ func connectDatabase() {
 
 func migration() {
 	DB.AutoMigrate(&User{})
+	DB.AutoMigrate(&Category{})
+	DB.AutoMigrate(&Product{})
 }
