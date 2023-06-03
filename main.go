@@ -3,6 +3,7 @@ package main
 import (
 	"kpahmadyani/configs"
 	"kpahmadyani/routes"
+	"os"
 )
 
 func Init() {
@@ -13,5 +14,12 @@ func Init() {
 func main() {
 
 	e := routes.Init()
-	e.Start(":8000")
+	e.Start(":" + getPort())
+}
+
+func getPort() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 }
