@@ -11,9 +11,9 @@ func Init() *echo.Echo {
 	// controller user
 	e.GET("/user", controllers.GetUserController)
 	e.GET("/user/:id", controllers.GetDetailUserController)
-	e.POST("/user", controllers.LoginRequest)
-	e.DELETE("/user/:id", controllers.DeleteUser)
-	e.PUT("/user/:id", controllers.UpdateUser)
+	e.POST("/user", controllers.AddUserController)
+	e.DELETE("/user/:id", controllers.DeleteUserController)
+	e.PUT("/user/:id", controllers.UpdateUserController)
 
 	//controller product
 	e.GET("/products", controllers.GetProductController)

@@ -36,19 +36,7 @@ func GetDetailUserController(c echo.Context) error {
 	})
 }
 
-func DeleteUser(c echo.Context) error {
-	id := c.Param("id")
-	result := configs.DB.Delete(&models.User{}, id)
-	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to delete user"})
-	}
-	if result.RowsAffected == 0 {
-		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
-	}
-	return c.JSON(http.StatusOK, map[string]string{"message": "User deleted"})
-}
-
-func LoginRequest(c echo.Context) error {
+func AddUserController(c echo.Context) error {
 	var userInput models.User
 	c.Bind(&userInput)
 	result := configs.DB.Create(&userInput)
@@ -61,7 +49,19 @@ func LoginRequest(c echo.Context) error {
 	})
 }
 
-func UpdateUser(c echo.Context) error {
+func DeleteUserController(c echo.Context) error {
+	id := c.Param("id")
+	result := configs.DB.Delete(&models.User{}, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to delete user"})
+	}
+	if result.RowsAffected == 0 {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
+	}
+	return c.JSON(http.StatusOK, map[string]string{"message": "User deleted"})
+}
+
+func UpdateUserController(c echo.Context) error {
 	id := c.Param("id")
 	var user models.User
 	result := configs.DB.First(&user, id)
