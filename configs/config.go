@@ -1,49 +1,23 @@
 package configs
 
 import (
-	"fmt"
 	"kpahmadyani/models"
-	"os"
 
-	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
-func LoadEnv() {
-	err := godotenv.Load()
-	if err != nil {
-		panic("gagal load file")
-	}
-}
-
-type DBConfig struct {
-	Username string
-	Password string
-	Host     string
-	Port     string
-	Name     string
-}
-
 func ConnectDatabase() {
-	var DbConfig DBConfig = DBConfig{
-		Username: os.Getenv("DB_USERNAME"),
-		Password: os.Getenv("DB_PASSWORD"),
-		Host:     os.Getenv("DB_HOST"),
-		Port:     os.Getenv("DB_PORT"),
-		Name:     os.Getenv("DB_NAME"),
-	}
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", DbConfig.Username, DbConfig.Password, DbConfig.Host, DbConfig.Port, DbConfig.Name)
+	dsn := "root:Sitialbir@tcp(127.0.0.1:1011)/unjuk_keterampilan_ok?charset=utf8mb4&parseTime=True&loc=Local"
 	var err error
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("Database Error")
 	}
-	fmt.Println("Success")
+	migration()
 }
-
 func migration() {
 	DB.AutoMigrate(&models.User{})
 	DB.AutoMigrate(&models.Category{})

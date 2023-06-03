@@ -8,6 +8,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//products
+
 func GetProductController(c echo.Context) error {
 	var products []models.Product
 	result := configs.DB.Preload("Category").Find(&products)
