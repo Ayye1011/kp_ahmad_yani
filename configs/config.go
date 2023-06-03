@@ -15,7 +15,7 @@ var DB *gorm.DB
 func LoadEnv() {
 	err := godotenv.Load()
 	if err != nil {
-		panic("gagal load file")
+		panic("gagal Load")
 	}
 }
 
@@ -28,22 +28,21 @@ type DBConfig struct {
 }
 
 func ConnectDatabase() {
-	var DbConfig DBConfig = DBConfig{
+	var dbConfig DBConfig = DBConfig{
 		Username: os.Getenv("DB_USERNAME"),
 		Password: os.Getenv("DB_PASSWORD"),
 		Host:     os.Getenv("DB_HOST"),
 		Port:     os.Getenv("DB_PORT"),
 		Name:     os.Getenv("DB_NAME"),
 	}
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", DbConfig.Username, DbConfig.Password, DbConfig.Host, DbConfig.Port, DbConfig.Name)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", dbConfig.Username, dbConfig.Password, dbConfig.Host, dbConfig.Port, dbConfig.Name)
 	var err error
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("Database Error")
 	}
-	fmt.Println("Success")
+	migration()
 }
-
 func migration() {
 	DB.AutoMigrate(&models.User{})
 	DB.AutoMigrate(&models.Category{})

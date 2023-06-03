@@ -4,13 +4,11 @@ import (
 	"kpahmadyani/controllers"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 func Init() *echo.Echo {
 	e := echo.New()
 	// controller user
-	e.Pre(middleware.RemoveTrailingSlash())
 	e.GET("/user", controllers.GetUserController)
 	e.GET("/user/:id", controllers.GetDetailUserController)
 	e.POST("/user", controllers.LoginRequest)
@@ -21,7 +19,7 @@ func Init() *echo.Echo {
 	e.GET("/products", controllers.GetProductController)
 	e.GET("/products/:category", controllers.GetCategoryWithProductsController)
 	e.POST("/products", controllers.AddProductController)
-	e.DELETE("products/:id", controllers.DeleteProductController)
+	e.DELETE("/products/:id", controllers.DeleteProductController)
 	return e
 
 }

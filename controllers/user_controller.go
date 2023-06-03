@@ -8,6 +8,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//user
+
 func GetUserController(c echo.Context) error {
 	var users []models.User
 	result := configs.DB.Find(&users)
@@ -70,7 +72,7 @@ func UpdateUser(c echo.Context) error {
 	if err := c.Bind(updatedUser); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
 	}
-	user.User = updatedUser.User
+	user.Username = updatedUser.Username
 	user.Password = updatedUser.Password
 
 	configs.DB.Save(&user)

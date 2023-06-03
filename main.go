@@ -6,15 +6,16 @@ import (
 	"os"
 )
 
-func Init() {
+func init() {
 	configs.LoadEnv()
 	configs.ConnectDatabase()
+
 }
 
 func main() {
-
 	e := routes.Init()
 	e.Start(":" + getPort())
+	// e.Start(":8080")
 }
 
 func getPort() string {
